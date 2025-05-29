@@ -1,26 +1,44 @@
-import * as merge from '../';
+import deepmerge from '../';
 
-const x = {
+interface XObject {
+	foo: string;
+	bar: string;
+	wat: number;
+}
+
+interface YObject {
+	foo: string;
+	bar: string;
+	wat: number;
+}
+
+interface ZObject {
+	baz: string;
+	quux: string;
+	wat: number;
+}
+
+const x: XObject = {
 	foo: 'abc',
 	bar: 'def',
 	wat: 42,
-}
+};
 
-const y = {
+const y: YObject = {
 	foo: 'cba',
 	bar: 'fed',
 	wat: 42,
-}
+};
 
-const z = {
+const z: ZObject = {
 	baz: '123',
 	quux: '456',
 	wat: 42,
-}
+};
 
-let merged1 = merge(x, y);
-let merged2 = merge(x, z);
-let merged3 = merge.all<{wat: number}>([x, y, z]);
+let merged1: XObject & YObject = deepmerge(x, y);
+let merged2: XObject & ZObject = deepmerge(x, z);
+let merged3: {wat: number} = deepmerge.all([x, y, z]);
 
 merged1.foo;
 merged1.bar;
@@ -28,36 +46,44 @@ merged2.foo;
 merged2.baz;
 merged3.wat;
 
-const options1: merge.Options = {
+// Using DeepMergeOptions interface from your implementation
+interface DeepMergeOptions {
+	clone?: boolean;
+	isMergeableObject?: (value: any) => boolean;
+	arrayMerge?: (target: any[], source: any[], options: DeepMergeOptions) => any[];
+	customMerge?: (key: PropertyKey) => ((target: any, source: any, options: DeepMergeOptions) => any) | undefined;
+	cloneUnlessOtherwiseSpecified?: (value: any, options: DeepMergeOptions) => any;
+}
+
+const options1: DeepMergeOptions = {
 	clone: true,
-	isMergeableObject(obj) {
+	isMergeableObject(value: any): boolean {
 		return false;
 	},
 };
 
-const options2: merge.Options = {
-	arrayMerge(target, source, options) {
+const options2: DeepMergeOptions = {
+	arrayMerge(target: any[], source: any[], options: DeepMergeOptions): any[] {
 		target.length;
 		source.length;
-		options.isMergeableObject(target);
+		options.isMergeableObject?.(target);
 		return [];
 	},
 	clone: true,
-	isMergeableObject(obj) {
+	isMergeableObject(value: any): boolean {
 		return false;
 	},
 };
 
-const options3: merge.Options = {
-	customMerge: (key) => {
-		if (key === 'foo') {
-			return (target, source) => target + source;
-		}
-	}
-}
+const options3: DeepMergeOptions = {
+    customMerge: (key: PropertyKey) => {
+        if (key === 'foo') {
+          return (target: any, source: any, options: DeepMergeOptions): any => target + source;
+        }
+    }
+};
 
-merged1 = merge(x, y, options1);
-merged2 = merge(x, z, options2);
-merged3 = merge.all<{wat: number}>([x, y, z], options1);
-
-const merged4 = merge(x, y, options3);
+merged1 = deepmerge(x, y, options1);
+merged2 = deepmerge(x, z, options2);
+merged3 = deepmerge.all([x, y, z], options1);
+const merged4 = deepmerge(x, y, options3);

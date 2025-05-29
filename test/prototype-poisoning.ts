@@ -1,4 +1,4 @@
-import merge from '../'; 
+import merge, { DeepMergeOptions } from '../'; 
 import test from 'tape';
 import isMergeableObject from 'is-mergeable-object';
 
@@ -43,22 +43,27 @@ test('merging strings works with a custom string merge', (t) => {
   const target = { name: "Alexander" };
   const source = { name: "Hamilton" };
 
-  function customMerge(key: string, options: any) {
+  function customMerge(key: PropertyKey): ((target: any, source: any, options: DeepMergeOptions) => any) | undefined {
     if (key === 'name') {
-      return (target: string, source: string, options: any) => {
+      return (target: string, source: string, options: DeepMergeOptions) => {
         return target[0] + '. ' + source.substring(0, 3);
       };
     } else {
-      return merge;
+      return undefined; // This will fallback to default merge behavior
     }
   }
 
-  function mergeable(target: unknown) {
+  function mergeable(target: unknown): boolean {
     return isMergeableObject(target) || (typeof target === 'string' && target.length > 1);
   }
 
+  const options: DeepMergeOptions = {
+    customMerge,
+    isMergeableObject: mergeable
+  };
+
   t.equal(
-    merge(target, source, { customMerge, isMergeableObject: mergeable }).name,
+    merge(target, source, options).name,
     'A. Ham'
   );
   t.end();

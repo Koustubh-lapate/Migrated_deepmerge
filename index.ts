@@ -1,6 +1,5 @@
 import defaultIsMergeableObject from 'is-mergeable-object';
-
-interface DeepMergeOptions {
+export interface DeepMergeOptions {
   clone?: boolean;
   isMergeableObject?: (value: any) => boolean;
   arrayMerge?: (target: any[], source: any[], options: DeepMergeOptions) => any[];

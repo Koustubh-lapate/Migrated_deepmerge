@@ -1,10 +1,10 @@
-import merge, { Options } from '../'
+import merge, { DeepMergeOptions } from '../'
 import test from 'tape'
 
 test('custom merge array', function (t) {
 	let mergeFunctionCalled = false
 
-	function overwriteMerge<T>(target: T[], source: T[], options: Options): T[] {
+	function overwriteMerge<T>(target: T[], source: T[], options: DeepMergeOptions): T[] {
 		mergeFunctionCalled = true
 		t.equal(options.arrayMerge, overwriteMerge)
 		return source
@@ -44,7 +44,7 @@ test('merge top-level arrays', function (t) {
 test('cloner function is available for merge functions to use', function (t) {
 	let customMergeWasCalled = false
 
-	function cloneMerge<T>(target: T[], source: T[], options: Options): T[] {
+	function cloneMerge<T>(target: T[], source: T[], options: DeepMergeOptions): T[] {
 		customMergeWasCalled = true
 		t.ok(options.cloneUnlessOtherwiseSpecified)
 		return target.concat(source).map(element =>
